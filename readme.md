@@ -4,6 +4,8 @@ Config.h is in the .gitignore and will be ignored when pushing
 <br><br>
 Libraries you need:
 <br><br>
+GLFW, GLEW, GLM
+<br>
 https://sourceforge.net/projects/assimp/files/assimp-3.1/
 <br>
 http://www.lonesock.net/soil.html
