@@ -10,8 +10,9 @@ in vec2 TexCoords;
 uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform vec3 lightColor;
-uniform vec3 objectColor;
 uniform sampler2D texture_diffuse1;
+uniform sampler2D texture_normal1;
+uniform sampler2D texture_specular1;
 
 void main()
 {
@@ -47,7 +48,7 @@ void main()
     // Spec multiply by the spec strength and light color
 	vec3 specular = 0.5 * spec * lightColor;
 
-	vec3 colorResult = (ambient + diffuse + specular) * objectColor;
-	color = vec4(texture(texture_diffuse1, TexCoords));
+	vec4 colorResult = vec4((ambient + diffuse + specular), 1.0) * vec4(texture(texture_diffuse1, TexCoords));
+	color = vec4(texture(texture_blah1, TexCoords));
 }
 

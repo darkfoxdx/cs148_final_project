@@ -4,3 +4,5 @@ final.cbp
 final.depend
 final.layout
 Config.h
+*.db
+nanosuit/Thumbs.db

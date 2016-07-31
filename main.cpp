@@ -89,20 +89,45 @@ int main()
 
     // Build and compile our shader program
     std::string vert_path;
-    vert_path.append(SHADER_PATH);
-    vert_path.append("model_loading.vert");
+    vert_path.append(FILE_PATH);
+    vert_path.append("shader/model_loading.vert");
     std::string frag_path;
-    frag_path.append(SHADER_PATH);
-    frag_path.append("model_loading.frag");
+    frag_path.append(FILE_PATH);
+    frag_path.append("shader/model_loading.frag");
 
     Shader shader(vert_path.c_str(), frag_path.c_str());
 
     std:string model_obj_path;
-    model_obj_path.append(MODEL_PATH);
-    model_obj_path.append("nanosuit/nanosuit.obj");
-    char *cstr = &model_obj_path[0u];
+    model_obj_path.append(FILE_PATH);
+    model_obj_path.append("ground/curve.obj");
+    char *cstrModel = &model_obj_path[0u];
     // Load models
-    Model ourModel(cstr);
+    Model ourModel(cstrModel);
+
+    // Load and create a texture
+    GLuint causticTexture;
+    // ====================
+    // Texture 1
+    // ====================
+    glGenTextures(1, &causticTexture);
+    glBindTexture(GL_TEXTURE_2D, causticTexture); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+    // Set our texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // Set texture filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // Load, create texture and generate mipmaps
+    int textureWidth, textureHeight;
+    std::string texture_path;
+    texture_path.append(FILE_PATH);
+    texture_path.append("caustics_texture.png");
+    char *cstrTexture = &texture_path[0u];
+    unsigned char* image = SOIL_load_image(cstrTexture, &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    SOIL_free_image_data(image);
+    glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done, so we won't accidentily mess up our texture.
 
     // Draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -129,6 +154,18 @@ int main()
         glm::mat4 view = camera.GetViewMatrix();
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+
+        GLint lightColorLoc  = glGetUniformLocation(shader.Program, "lightColor");
+        GLint lightPosLoc    = glGetUniformLocation(shader.Program, "lightPos");
+        GLint viewPosLoc     = glGetUniformLocation(shader.Program, "viewPos");
+        glUniform3f(lightColorLoc,  1.0f, 0.0f, 0.0f);
+        glUniform3f(lightPosLoc,    lightPos.x, lightPos.y, lightPos.z);
+        glUniform3f(viewPosLoc,     camera.Position.x, camera.Position.y, camera.Position.z);
+
+        // Bind Textures using texture units
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, causticTexture);
+        glUniform1i(glGetUniformLocation(shader.Program, "causticTexture"), 0);
 
         // Draw the loaded model
         glm::mat4 model;

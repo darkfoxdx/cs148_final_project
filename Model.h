@@ -183,9 +183,6 @@ private:
     }
 };
 
-
-
-
 GLint TextureFromFile(const char* path, string directory)
 {
      //Generate texture ID and load texture data
