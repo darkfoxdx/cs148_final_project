@@ -65,7 +65,7 @@ public:
                 ss << specularNr++; // Transfer GLuint to stream
             number = ss.str();
             // Now set the sampler to the correct texture unit
-            glUniform1i(glGetUniformLocation(shader.Program, (name + number).c_str()), i);
+            glUniform1i(glGetUniformLocation(shader.Program, (name + number).c_str()), i + 1);
             // And finally bind the texture
             glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
         }

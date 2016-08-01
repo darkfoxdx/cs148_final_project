@@ -99,10 +99,15 @@ int main()
 
     std:string model_obj_path;
     model_obj_path.append(FILE_PATH);
-    model_obj_path.append("ground/curve.obj");
+    model_obj_path.append("ground/hamburger.obj");
     char *cstrModel = &model_obj_path[0u];
+    string floor_obj_path;
+    floor_obj_path.append(FILE_PATH);
+    floor_obj_path.append("ground/curve.obj");
+    char *cstrFloorModel = &floor_obj_path[0u];
     // Load models
     Model ourModel(cstrModel);
+    Model floorModel(cstrFloorModel);
 
     // Load and create a texture
     GLuint causticTexture;
@@ -115,7 +120,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     // Set texture filtering
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // Load, create texture and generate mipmaps
     int textureWidth, textureHeight;
@@ -163,9 +168,9 @@ int main()
         glUniform3f(viewPosLoc,     camera.Position.x, camera.Position.y, camera.Position.z);
 
         // Bind Textures using texture units
-        glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE31);
         glBindTexture(GL_TEXTURE_2D, causticTexture);
-        glUniform1i(glGetUniformLocation(shader.Program, "causticTexture"), 0);
+        glUniform1i(glGetUniformLocation(shader.Program, "causticTexture"), 31);
 
         // Draw the loaded model
         glm::mat4 model;
@@ -173,6 +178,10 @@ int main()
         model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// It's a bit too big for our scene, so scale it down
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         ourModel.Draw(shader);
+        floorModel.Draw(shader);
+
+        glActiveTexture(GL_TEXTURE31);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         // Swap the buffers
         glfwSwapBuffers(window);

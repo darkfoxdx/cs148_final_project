@@ -12,5 +12,9 @@ uniform sampler2D causticTexture;
 
 void main()
 {
-    color = vec4(texture(causticTexture, TexCoords));
+    vec3 result = vec3(texture(causticTexture, TexCoords)) * vec3(0.9, 0.9, 0.9);
+    color = vec4(result, 1.0);
+
+    //color = vec4(1.0, 1.0, 1.0, 1.0);
+    //color = vec4(Normal, 1.0);
 }
