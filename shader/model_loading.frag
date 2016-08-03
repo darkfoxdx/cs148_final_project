@@ -3,6 +3,8 @@
 in vec2 TexCoords;
 in vec3 Normal;
 in vec3 FragPos;
+in vec3 PlaneNormal; //position and normal of the caustics plane
+in vec3 PlanePosition;
 
 out vec4 color;
 
@@ -11,9 +13,13 @@ uniform sampler2D causticTexture;
 uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform vec3 lightColor;
-vec4 ray_trace(vec4 ray){
-    return vec4(1,1,1,1);
+
+vec3 ray_trace(vec3 plane_center, vec3 plane_normal, vec3 ray_origin, vec3 ray_direction){
+    float t=dot(plane_normal,plane_center-ray_origin)/dot(plane_normal, ray_direction);
+	vec3 position = ray_origin + t * ray_direction;
+    return position;
 }
+
 void main()
 {
 // Ambient light
@@ -46,7 +52,13 @@ void main()
     // Spec multiply by the spec strength and light color
 	vec3 specular = 0.5 * spec * lightColor;
 
-	vec4 colorResult = vec4((ambient + diffuse + specular), 1.0)*vec4(texture(causticTexture, TexCoords));
+    vec3 hit_pos = ray_trace(PlanePosition, PlaneNormal, FragPos, Normal);
 
-    color = colorResult;
+	vec4 colorResult = vec4((ambient + diffuse + specular), 1.0)*vec4(texture(causticTexture, TexCoords));
+    if(length(hit_pos - PlanePosition)>1.0){
+        color = vec4(0, 0, 1, 1.0);
+    }else{
+        color = vec4(0, 1, 0, 1.0);
+    }
+    //color = colorResult;//*vec4(hit_pos, 1);
 }
