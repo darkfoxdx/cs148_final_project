@@ -73,7 +73,7 @@ void main()
     */
     vec4 lighting = vec4((ambient + diffuse + specular), 1.0);
     vec4 light;
-    float oceanBoundary = 1;
+    float oceanBoundary = 5;
     if(length(hit_pos - PlanePosition)>oceanBoundary){
         light = vec4(0.0, 0.0, 0.0, 1.0);
     }else{
@@ -87,7 +87,7 @@ void main()
         float n1n2 = 1.0 * 0.7; //for water?
         vec3 normal_air = -normal_map3*((sqrt((1-n1n2*n1n2)*(1-ns)*(1-ns)))+n1n2*(ns))-Normal*n1n2;
         vec3 hit_pos2 = raytrace(lightPos, lightDir, hit_pos, normal_air);
-        float lightStrength = length(lightPos - hit_pos2)/100;
+        float lightStrength = 1/(length(lightPos - hit_pos2)+1);
         light = lightStrength*vec4(1.0, 1.0, 1.0, 1.0);
         //light = normal_map;
     }
