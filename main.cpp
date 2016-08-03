@@ -106,32 +106,53 @@ int main()
     floor_obj_path.append("ground/curve.obj");
     char *cstrFloorModel = &floor_obj_path[0u];
     // Load models
-    Model ourModel(cstrModel);
+//    Model ourModel(cstrModel);
     Model floorModel(cstrFloorModel);
 
     // Load and create a texture
-    GLuint causticTexture;
+    GLuint oceanHeightTexture, oceanNormalTexture;
+    int textureWidth, textureHeight;
+    std::string textureOceanHeight;
+    textureOceanHeight.append(FILE_PATH);
+    textureOceanHeight.append("ocean_height.png");
+    char *cstrTextureOceanHeight = &textureOceanHeight[0u];
+    std::string textureOceanNormal;
+    textureOceanNormal.append(FILE_PATH);
+    textureOceanNormal.append("ocean_normal.png");
+    char *cstrtextureOceanNormal = &textureOceanNormal[0u];
     // ====================
     // Texture 1
     // ====================
-    glGenTextures(1, &causticTexture);
-    glBindTexture(GL_TEXTURE_2D, causticTexture); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+    glGenTextures(1, &oceanHeightTexture);
+    glBindTexture(GL_TEXTURE_2D, oceanHeightTexture); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
     // Set our texture parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     // Set texture filtering
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // Load, create texture and generate mipmaps
-    int textureWidth, textureHeight;
-    std::string texture_path;
-    texture_path.append(FILE_PATH);
-    texture_path.append("caustics_texture.png");
-    char *cstrTexture = &texture_path[0u];
-    unsigned char* image = SOIL_load_image(cstrTexture, &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
+    unsigned char* image = SOIL_load_image(cstrTextureOceanHeight, &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
     SOIL_free_image_data(image);
+    glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done, so we won't accidentily mess up our texture.
+    // ====================
+    // Texture 2
+    // ====================
+    glGenTextures(1, &oceanNormalTexture);
+    glBindTexture(GL_TEXTURE_2D, oceanNormalTexture); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+    // Set our texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // Set texture filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // Load, create texture and generate mipmaps
+    unsigned char* image2 = SOIL_load_image(cstrtextureOceanNormal, &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    SOIL_free_image_data(image2);
     glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done, so we won't accidentily mess up our texture.
 
     // Draw in wireframe
@@ -168,20 +189,20 @@ int main()
         glUniform3f(viewPosLoc,     camera.Position.x, camera.Position.y, camera.Position.z);
 
         // Bind Textures using texture units
+        glActiveTexture(GL_TEXTURE30);
+        glBindTexture(GL_TEXTURE_2D, oceanHeightTexture);
+        glUniform1i(glGetUniformLocation(shader.Program, "oceanHeight"), 30);
         glActiveTexture(GL_TEXTURE31);
-        glBindTexture(GL_TEXTURE_2D, causticTexture);
-        glUniform1i(glGetUniformLocation(shader.Program, "causticTexture"), 31);
+        glBindTexture(GL_TEXTURE_2D, oceanNormalTexture);
+        glUniform1i(glGetUniformLocation(shader.Program, "oceanNormal"), 31);
 
         // Draw the loaded model
         glm::mat4 model;
         model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
         model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// It's a bit too big for our scene, so scale it down
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        ourModel.Draw(shader);
+//        ourModel.Draw(shader);
         floorModel.Draw(shader);
-
-        glActiveTexture(GL_TEXTURE31);
-        glBindTexture(GL_TEXTURE_2D, 0);
 
         // Swap the buffers
         glfwSwapBuffers(window);
