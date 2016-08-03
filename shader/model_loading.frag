@@ -55,6 +55,8 @@ void main()
     vec3 hit_pos = ray_trace(PlanePosition, PlaneNormal, FragPos, Normal);
 
 	vec4 colorResult = vec4((ambient + diffuse + specular), 1.0)*vec4(texture(causticTexture, TexCoords));
+
+
     if(length(hit_pos - PlanePosition)>1.0){
         color = vec4(0, 0, 1, 1.0);
     }else{
