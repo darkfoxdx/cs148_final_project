@@ -8,14 +8,10 @@ in vec3 PlanePosition;
 
 out vec4 color;
 
-<<<<<<< HEAD
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
 uniform sampler2D oceanHeight;
 uniform sampler2D oceanNormal;
-=======
-uniform sampler2D causticTexture;
->>>>>>> refs/remotes/origin/temp
 
 uniform vec3 lightPos;
 uniform vec3 viewPos;
@@ -29,10 +25,7 @@ vec3 ray_trace(vec3 plane_center, vec3 plane_normal, vec3 ray_origin, vec3 ray_d
 
 void main()
 {
-<<<<<<< HEAD
-    vec3 result = vec3(texture(oceanHeight, TexCoords)) * vec3(0.9, 0.9, 0.9);
-    color = vec4(result, 1.0);
-=======
+
 // Ambient light
 	// Ambient strength multiply with lightColor
 	vec3 ambient = 0.05 * lightColor;
@@ -66,8 +59,6 @@ void main()
     vec3 hit_pos = ray_trace(PlanePosition, PlaneNormal, FragPos, Normal);
 
 	vec4 colorResult = vec4((ambient + diffuse + specular), 1.0)*vec4(texture(causticTexture, TexCoords));
-
->>>>>>> refs/remotes/origin/temp
 
     if(length(hit_pos - PlanePosition)>1.0){
         color = vec4(0, 0, 1, 1.0);
