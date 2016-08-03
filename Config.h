@@ -5,6 +5,7 @@
 // Follow the format for Windows
 // Double backslash for shader
 // Forward slash for model
-const char* FILE_PATH = "C:/Users/darkfoxdx/Documents/GitHub/cs148_final_project/";
+
+const char* FILE_PATH = "C:/Users/Jieun/Documents/GitHub/cs148_final_project/";
 
 #endif
