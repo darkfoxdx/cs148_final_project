@@ -86,7 +86,7 @@ int main()
 
     // OpenGL options
     glEnable(GL_DEPTH_TEST);
-
+    glEnable(GL_BLEND);
     // Build and compile our shader program
     std::string vert_path;
     vert_path.append(FILE_PATH);
