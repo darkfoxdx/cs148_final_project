@@ -29,14 +29,14 @@ void main()
 {
     vec4 final_color;
     float total = 0;
-    float range = 0.8;
+    float range = 0.1;
     float steps = range/3;
+    vec4 light, height_map, normal_map;
     for(float i=-range; i<range; i+=steps){
     for(float j=-range; j<range; j+=steps){
     for(float k=-range; k<range; k+=steps){
         vec3 hit_pos = raytrace(PlanePosition, PlaneNormal, FragPos, vec3(Normal.x+i, Normal.y+j, Normal.z+k));
-        vec4 light, height_map, normal_map;
-        float oceanBoundary = 2;
+        float oceanBoundary = 0.2;
         height_map = texture(oceanHeight, vec2(hit_pos.x/oceanBoundary/2+0.5, hit_pos.z/oceanBoundary/2+0.5));
         normal_map = texture(oceanNormal, vec2(hit_pos.x/oceanBoundary/2+0.5, hit_pos.z/oceanBoundary/2+0.5));
         //if(length(hit_pos - PlanePosition)>oceanBoundary){
@@ -46,21 +46,22 @@ void main()
         //}
 
         //move the light
-        hit_pos.y+=height_map.y;
+        hit_pos.y+=height_map.y*3;
 
         //vec3 lightDir = normalize(hit_pos - lightPos);
         vec3 lightDir = normalize(lightPos - FragPos);
 
-        float c1 = dot(vec3(normal_map), lightDir);
-        float refractionRatio = 0.7;
-        float c2 = sqrt(1 - (refractionRatio * refractionRatio) * (1-c1*c1));
-        vec3 refractionDir =  ((refractionRatio * c1 + c2) * vec3(-normal_map))-(lightDir*refractionRatio);
+        float c1 = dot(vec3(-normal_map), lightDir);
+        float refractionRatio = 1.3;
+        float c2 = sqrt(1 + (refractionRatio * refractionRatio) * (c1*c1-1));
+        vec3 refractionDir =  ((refractionRatio * c1 + c2) * vec3(-normal_map))+(lightDir*refractionRatio);
 
 
-        vec3 hit_pos2 = raytrace(lightPos, lightDir, hit_pos, refractionDir);
+        //vec3 hit_pos2 = raytrace(lightPos, lightDir, hit_pos, refractionDir);
+        vec3 hit_pos2 = ((hit_pos + refractionDir * 5)/2);
 
-        float light_x_range = 10;
-        float light_z_range = 10;
+        float light_x_range = 1;
+        float light_z_range = 1;
 
         if(hit_pos2.x>light_x_range){
             hit_pos2.x=light_x_range;
@@ -95,10 +96,10 @@ void main()
     float fogFactor = 0.8;
 	fragColour = fragColour * (1.0-fogFactor) + waterColour * (fogFactor);
     // Sample the caustic texture
-    vec4 caustic = final_color/total;
+    vec4 caustic = light;
     float colorCaustic = min(0.7, caustic.r);
     // Apply the caustic texture
-    fragColour += vec4(colorCaustic, colorCaustic, colorCaustic, 1);
+    fragColour += caustic;
     fragColour.a = 1.0;
     // Output the colour
     color = fragColour;

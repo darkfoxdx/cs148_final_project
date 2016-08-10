@@ -38,7 +38,7 @@ GLfloat lastY  =  HEIGHT / 2.0;
 bool    keys[1024];
 
 // Light
-glm::vec3 lightPos(0.0f, 3.0f, 0.0f);
+glm::vec3 lightPos(0.0f, 3000.0f, 0.0f);
 
 // Deltatime
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
@@ -114,11 +114,11 @@ int main()
     int textureWidth, textureHeight;
     std::string textureOceanHeight;
     textureOceanHeight.append(FILE_PATH);
-    textureOceanHeight.append("dynamic_height.png");
+    textureOceanHeight.append("sine_wave_height.png");
     char *cstrTextureOceanHeight = &textureOceanHeight[0u];
     std::string textureOceanNormal;
     textureOceanNormal.append(FILE_PATH);
-    textureOceanNormal.append("dynamic_normal.png");
+    textureOceanNormal.append("sine_wave_normal.png");
     char *cstrtextureOceanNormal = &textureOceanNormal[0u];
     std::string lightMapFile;
     lightMapFile.append(FILE_PATH);
@@ -186,6 +186,8 @@ int main()
         GLfloat currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+
+        lightPos -= deltaTime;
 
         // Check and call events
         glfwPollEvents();
