@@ -29,7 +29,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void do_movement();
 
 // Window dimensions
-const GLuint WIDTH = 800, HEIGHT = 600;
+const GLuint WIDTH = 1280, HEIGHT = 720;
 
 // Camera
 Camera  camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -205,7 +205,7 @@ int main()
         GLint lightColorLoc  = glGetUniformLocation(shader.Program, "lightColor");
         GLint lightPosLoc    = glGetUniformLocation(shader.Program, "lightPos");
         GLint viewPosLoc     = glGetUniformLocation(shader.Program, "viewPos");
-        glUniform3f(lightColorLoc,  0.0f, 5.0f, 0.0f);
+        glUniform3f(lightColorLoc,  0.0f, 0.0f, 0.0f);
         glUniform3f(lightPosLoc,    lightPos.x, lightPos.y, lightPos.z);
         glUniform3f(viewPosLoc,     camera.Position.x, camera.Position.y, camera.Position.z);
 

@@ -27,27 +27,64 @@ vec3 raytrace(vec3 plane_center, vec3 plane_normal, vec3 ray_origin, vec3 ray_di
 
 void main()
 {
-    vec3 hit_pos = raytrace(PlanePosition, PlaneNormal, FragPos, Normal);
+    vec4 final_color;
+    float total = 0;
+    float range = 0.1;
+    float steps = range/3;
+    for(float i=-range; i<range; i+=steps){
+    for(float j=-range; j<range; j+=steps){
+    for(float k=-range; k<range; k+=steps){
+        vec3 hit_pos = raytrace(PlanePosition, PlaneNormal, FragPos, vec3(Normal.x+i, Normal.y+j, Normal.z+k));
+        vec4 light, height_map, normal_map;
+        float oceanBoundary = 2;
+        height_map = texture(oceanHeight, vec2(hit_pos.x/oceanBoundary/2+0.5, hit_pos.z/oceanBoundary/2+0.5));
+        normal_map = texture(oceanNormal, vec2(hit_pos.x/oceanBoundary/2+0.5, hit_pos.z/oceanBoundary/2+0.5));
+        //if(length(hit_pos - PlanePosition)>oceanBoundary){
+        //light = vec4(0.0, 0.0, 0.0, 1.0);
+        //}else{
+        //    light = height_map;
+        //}
 
-    vec4 light, height_map, normal_map;
-    float oceanBoundary = 5;
-        height_map = texture(oceanHeight, vec2(hit_pos.x/oceanBoundary+0.5, hit_pos.z/oceanBoundary+0.5));
-        normal_map = texture(oceanNormal, vec2(hit_pos.x/oceanBoundary+0.5, hit_pos.z/oceanBoundary+0.5));
         //move the light
         hit_pos.y+=height_map.y;
 
-        vec3 lightDir = normalize(hit_pos - lightPos);
+        //vec3 lightDir = normalize(hit_pos - lightPos);
+        vec3 lightDir = normalize(lightPos - FragPos);
+
         float c1 = dot(vec3(normal_map), lightDir);
-        float refractionRatio = 1.3;
-        float c2 = sqrt(1 - (refractionRatio * refractionRatio) * (1 - (c1*c1)));
-        vec3 refractionDir = (refractionRatio * lightDir) + (refractionRatio * c1 - c2) * vec3(-normal_map);
+        float refractionRatio = 0.8;
+        float c2 = sqrt(1 - (refractionRatio * refractionRatio) * (1-c1*c1));
+        vec3 refractionDir =  ((refractionRatio * c1 + c2) * vec3(-normal_map))-(lightDir*refractionRatio);
+
 
         vec3 hit_pos2 = raytrace(lightPos, lightDir, hit_pos, refractionDir);
 
-        light = texture(lightMap, vec2(hit_pos2.x/50+0.5, hit_pos2.z/50+0.5));
+        float light_x_range = 10;
+        float light_z_range = 10;
 
-    color = light;//*lighting;//*vec4(hit_pos, 1);
+        if(hit_pos2.x>light_x_range){
+            hit_pos2.x=light_x_range;
+        }
+        if(hit_pos2.z>light_z_range){
+            hit_pos2.z=light_z_range;
+        }
+        if(hit_pos2.x<-light_x_range){
+            hit_pos2.x=-light_x_range;
+        }
+        if(hit_pos2.z<-light_z_range){
+            hit_pos2.z=-light_z_range;
+        }
+
+        light = texture(lightMap, vec2(hit_pos2.x/light_x_range/2+0.5, hit_pos2.z/light_z_range/2+0.5));
+        //float light_strength = length(hit_pos2)/10;
+        final_color += light;
+        total+=1.0;
+
+    }}}
+    //*lighting;//*vec4(hit_pos, 1);
     //vec4 colorResult = vec4((ambient + diffuse + specular), 1.0);
     //color=colorResult;
     //color = texture(lightMap, TexCoords);
+    //color = texture(oceanNormal, TexCoords);
+    color = final_color/total;// / total;
 }
