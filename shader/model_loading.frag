@@ -13,6 +13,7 @@ uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
 uniform sampler2D oceanHeight;
 uniform sampler2D oceanNormal;
+uniform sampler2D lightMap;
 
 uniform vec3 lightPos;
 uniform vec3 viewPos;
@@ -91,7 +92,8 @@ void main()
         light = lightStrength*vec4(1.0, 1.0, 1.0, 1.0);
         //light = normal_map;
     }
-    color = light;//*lighting;//*vec4(hit_pos, 1);
+    //color = light;//*lighting;//*vec4(hit_pos, 1);
     //vec4 colorResult = vec4((ambient + diffuse + specular), 1.0);
     //color=colorResult;
+    color = texture(lightMap, TexCoords);
 }
