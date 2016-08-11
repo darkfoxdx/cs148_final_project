@@ -48,6 +48,9 @@ glm::vec3 lightInvDir(2, 12, 0);
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
 GLfloat lastFrame = 0.0f;  	// Time of last frame
 
+float randNum[100];
+float randScale[100];
+
 int main()
 {
     // Init windows
@@ -83,6 +86,14 @@ int main()
         return -1;
     }
 
+
+    //Randomize the bubbles
+    for(int j = 0; j<100; j++)
+    {
+        randNum[j] = rand();
+        randScale[j] = rand();
+    }
+
     // OpenGL options
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -105,7 +116,8 @@ int main()
 
     */
 
-    std:string model_obj_path;
+std:
+    string model_obj_path;
     model_obj_path.append(FILE_PATH);
     model_obj_path.append("ground/sphere.obj");
     char *cstrModel = &model_obj_path[0u];
@@ -184,7 +196,7 @@ int main()
 
     // Always check that our framebuffer is ok
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    return false;
+        return false;
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -215,9 +227,9 @@ int main()
 
         glViewport(0, 0, 1024, 1024);
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-            glClear(GL_DEPTH_BUFFER_BIT);
-            RenderScene(ourModel, simpleDepthShader);
-            RenderScene(floorModel, simpleDepthShader);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        //RenderScene(ourModel, simpleDepthShader);
+        //RenderScene(floorModel, simpleDepthShader);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 2. Render scene as normal
@@ -230,18 +242,18 @@ int main()
         glm::mat4 view = camera.GetViewMatrix();
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-		glm::mat4 biasMatrix(
-			0.5, 0.0, 0.0, 0.0,
-			0.0, 0.5, 0.0, 0.0,
-			0.0, 0.0, 0.5, 0.0,
-			0.5, 0.5, 0.5, 1.0
-		);
+        glm::mat4 biasMatrix(
+            0.5, 0.0, 0.0, 0.0,
+            0.0, 0.5, 0.0, 0.0,
+            0.0, 0.0, 0.5, 0.0,
+            0.5, 0.5, 0.5, 1.0
+        );
 
-		glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
+        glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
 
-		// Send our transformation to the currently bound shader,
-		// in the "MVP" uniform
-		glUniformMatrix4fv(DepthBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
+        // Send our transformation to the currently bound shader,
+        // in the "MVP" uniform
+        glUniformMatrix4fv(DepthBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
 
 
         GLint lightColorLoc  = glGetUniformLocation(shader.Program, "lightColor");
@@ -264,15 +276,17 @@ int main()
         glBindTexture(GL_TEXTURE_2D, lightMapTexture);
         glUniform1i(glGetUniformLocation(shader.Program, "lightMap"), 31);
 
-/*
-        float randNum[100];
-        float randScale[100];
-        for(int j = 0; j<100; j++){
-            randNum[j] = rand();
-            randScale[j] = rand();
-        }
+        //Do some transformations to the whole scene
+        glm::mat4 model;
+        model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// It's a bit too big for our scene, so scale it down
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-        for(float i=-1; i<100; i+=1){
+        floorModel.Draw(shader);
+
+        // Draw the loaded model
+        for(int i=-1; i<100; i+=1)
+        {
             // Draw the loaded model
             glm::mat4 model_sphere;
             model_sphere = glm::translate(model_sphere, glm::vec3(randNum[i]+cos(currentFrame)/10, currentFrame/12-2.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
@@ -280,15 +294,6 @@ int main()
             glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model_sphere));
             ourModel.Draw(shader);
         }
-*/
-        // Draw the loaded model
-        glm::mat4 model;
-        model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// It's a bit too big for our scene, so scale it down
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-        RenderScene(ourModel, shader);
-        RenderScene(floorModel, shader);
 
         // Swap the buffers
         glfwSwapBuffers(window);
