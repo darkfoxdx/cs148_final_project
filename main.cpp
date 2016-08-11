@@ -38,7 +38,7 @@ GLfloat lastY  =  HEIGHT / 2.0;
 bool    keys[1024];
 
 // Light
-glm::vec3 lightPos(0.0f, 3000.0f, 0.0f);
+glm::vec3 lightPos(-2.0f, 12.0f, -3.0f);
 
 // Deltatime
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
@@ -164,8 +164,8 @@ int main()
     glGenTextures(1, &lightMapTexture);
     glBindTexture(GL_TEXTURE_2D, lightMapTexture); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
     // Set our texture parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);	// Set texture wrapping to GL_REPEAT
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     // Set texture filtering
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -187,7 +187,7 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        lightPos -= deltaTime;
+        //lightPos -= deltaTime;
 
         // Check and call events
         glfwPollEvents();
@@ -264,6 +264,18 @@ void do_movement()
         camera.ProcessKeyboard(LEFT, deltaTime);
     if (keys[GLFW_KEY_D])
         camera.ProcessKeyboard(RIGHT, deltaTime);
+    if (keys[GLFW_KEY_LEFT])
+        lightPos.x -= 1;
+    if (keys[GLFW_KEY_RIGHT])
+        lightPos.x += 1;
+    if (keys[GLFW_KEY_DOWN])
+        lightPos.z -= 1;
+    if (keys[GLFW_KEY_UP])
+        lightPos.z += 1;
+    if (keys[GLFW_KEY_MINUS])
+        lightPos.y -= 1;
+    if (keys[GLFW_KEY_EQUAL])
+        lightPos.y += 1;
 }
 
 bool firstMouse = true;

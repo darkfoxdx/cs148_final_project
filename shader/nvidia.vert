@@ -15,7 +15,7 @@ uniform mat4 projection;
 
 void main()
 {
-    vec3 plane_pos = vec3(0, 1.0, 0.0f);
+    vec3 plane_pos = vec3(0, 5.0, 0.0f);
     vec3 plane_normal = vec3(0, 1.0, 0.0f);
 
     gl_Position = projection * view * model * vec4(position, 1.0f);
