@@ -32,18 +32,15 @@ void main()
     vec4 final_color;
     float total = 0;
     float range = 0.1;
-    float steps = range/4;
+    float steps = range/3;
     vec4 light, height_map, normal_map;
     for(float i=-range; i<range; i+=steps){
     for(float j=-range; j<range; j+=steps){
     for(float k=-range; k<range; k+=steps){
         vec3 hit_pos = raytrace(PlanePosition, PlaneNormal, FragPos, vec3(Normal.x+i, Normal.y+j, Normal.z+k));
-
-        float oceanBoundary = 0.5;
+        float oceanBoundary = 0.6;
         height_map = texture(oceanHeight, vec2(hit_pos.x/oceanBoundary/2+0.5, hit_pos.z/oceanBoundary/2+0.5));
         normal_map = texture(oceanNormal, vec2(hit_pos.x/oceanBoundary/2+0.5, hit_pos.z/oceanBoundary/2+0.5));
-        //color=height_map;
-        //continue;
         //if(length(hit_pos - PlanePosition)>oceanBoundary){
         //light = vec4(0.0, 0.0, 0.0, 1.0);
         //}else{

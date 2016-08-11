@@ -101,7 +101,6 @@ int main()
     shadow_mapping_frag_path.append(FILE_PATH);
     shadow_mapping_frag_path.append("shader/shadow_mapping.frag");
 
-<<<<<<< HEAD
     std:string model_obj_path;
     model_obj_path.append(FILE_PATH);
     model_obj_path.append("ground/sphere.obj");
@@ -113,7 +112,7 @@ int main()
     // Load models
     Model ourModel(cstrModel);
     Model floorModel(cstrFloorModel);
-=======
+
     std::string simple_depth_vert_path;
     simple_depth_vert_path.append(FILE_PATH);
     simple_depth_vert_path.append("shader/shadow_mapping_depth.vert");
@@ -124,7 +123,6 @@ int main()
     Shader shader(vert_path.c_str(), frag_path.c_str());
     //Shader shader(shadow_mapping_vert_path.c_str(), shadow_mapping_frag_path.c_str());
     Shader simpleDepthShader(simple_depth_vert_path.c_str(), simple_depth_frag_path.c_str());
->>>>>>> origin/temp
 
     // Load and create a texture
     GLuint oceanHeightTexture, oceanNormalTexture, lightMapTexture;
@@ -149,8 +147,6 @@ int main()
     // Draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-<<<<<<< HEAD
-=======
     // Set texture samples
     shader.Use();
     glUniform1i(glGetUniformLocation(shader.Program, "shadowMap"), 28);
@@ -190,7 +186,6 @@ int main()
 
     // Clear the colorbuffer
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
->>>>>>> origin/temp
 
     // The loop
     glfwSetTime(0);
@@ -264,7 +259,7 @@ int main()
         glBindTexture(GL_TEXTURE_2D, lightMapTexture);
         glUniform1i(glGetUniformLocation(shader.Program, "lightMap"), 31);
 
-<<<<<<< HEAD
+/*
         float randNum[100];
         float randScale[100];
         for(int j = 0; j<100; j++){
@@ -280,6 +275,7 @@ int main()
             glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model_sphere));
             ourModel.Draw(shader);
         }
+*/
         // Draw the loaded model
         glm::mat4 model;
         model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
@@ -287,9 +283,7 @@ int main()
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
         floorModel.Draw(shader);
-=======
         RenderScene(shader);
->>>>>>> origin/temp
 
         // Swap the buffers
         glfwSwapBuffers(window);
