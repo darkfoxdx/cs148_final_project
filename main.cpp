@@ -48,8 +48,6 @@ glm::vec3 lightInvDir(2, 12, 0);
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
 GLfloat lastFrame = 0.0f;  	// Time of last frame
 
-float randScale[100];
-
 int main()
 {
     // Init windows
@@ -83,13 +81,6 @@ int main()
     {
         std::cout << "Failed to initialize GLEW" << std::endl;
         return -1;
-    }
-
-
-    //Randomize the bubbles
-    for(int j = 0; j<100; j++)
-    {
-        randScale[j] = rand();
     }
 
     // OpenGL options
@@ -133,15 +124,15 @@ int main()
     int textureWidth, textureHeight;
     std::string textureOceanHeight;
     textureOceanHeight.append(FILE_PATH);
-    textureOceanHeight.append("sine_wave_height.png");
+    textureOceanHeight.append("maps/sine_wave_height.png");
     char *cstrTextureOceanHeight = &textureOceanHeight[0u];
     std::string textureOceanNormal;
     textureOceanNormal.append(FILE_PATH);
-    textureOceanNormal.append("sine_wave_normal.png");
+    textureOceanNormal.append("maps/sine_wave_normal.png");
     char *cstrtextureOceanNormal = &textureOceanNormal[0u];
     std::string lightMapFile;
     lightMapFile.append(FILE_PATH);
-    lightMapFile.append("light_map.png");
+    lightMapFile.append("maps/light_map.png");
     char *cstrlightMapFile = &lightMapFile[0u];
 
     oceanHeightTexture = loadTexture(cstrTextureOceanHeight);
@@ -207,6 +198,7 @@ int main()
         // Compute the MVP matrix from the light's point of view
         glm::mat4 depthProjectionMatrix = glm::ortho<float>(-10,10,-10,10,-10,20);
         glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0,0,0), glm::vec3(0,1,0));
+
         glm::mat4 depthModelMatrix = glm::mat4(1.0);
         glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
 
@@ -225,7 +217,8 @@ int main()
         glViewport(0, 0, WIDTH, HEIGHT);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader.Use();   // <-- Don't forget this one!
+        //shader.Use();   // <-- Don't forget this one!
+        //simpleDepthShader.Use();
         // Transformation matrices
         glm::mat4 projection = glm::perspective(camera.Zoom, (float)WIDTH/(float)HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
@@ -244,7 +237,6 @@ int main()
         // Send our transformation to the currently bound shader,
         // in the "MVP" uniform
         glUniformMatrix4fv(DepthBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
-
 
         GLint lightColorLoc  = glGetUniformLocation(shader.Program, "lightColor");
         GLint lightPosLoc    = glGetUniformLocation(shader.Program, "lightPos");
@@ -266,22 +258,14 @@ int main()
         glBindTexture(GL_TEXTURE_2D, lightMapTexture);
         glUniform1i(glGetUniformLocation(shader.Program, "lightMap"), 31);
 
-        //Do some transformations to the floor model
-        glm::mat4 model;
-        model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// It's a bit too big for our scene, so scale it down
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
         RenderScene(floorModel, shader);
 
         // Draw the loaded model
-            // Draw the loaded model
-            glm::mat4 model_sphere;
-            model_sphere = glm::translate(model_sphere, glm::vec3(cos(currentFrame)/10, currentFrame/12-2.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
-            model_sphere = glm::scale(model_sphere, glm::vec3(0.1f, 0.1f, 0.1f));	// It's a bit too big for our scene, so scale it down
-            glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model_sphere));
-            ourModel.Draw(shader);
-            //RenderScene(ourModel, shader);
+        glm::mat4 model_sphere;
+        model_sphere = glm::translate(model_sphere, glm::vec3(cos(currentFrame)/10, currentFrame/12-2.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+        model_sphere = glm::scale(model_sphere, glm::vec3(0.1f, 0.1f, 0.1f));	// It's a bit too big for our scene, so scale it down
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model_sphere));
+        ourModel.Draw(shader);
 
         // Swap the buffers
         glfwSwapBuffers(window);
