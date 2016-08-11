@@ -221,10 +221,11 @@ int main()
         glBindTexture(GL_TEXTURE_2D, lightMapTexture);
         glUniform1i(glGetUniformLocation(shader.Program, "lightMap"), 31);
 
-        for(float i=-1; i<1; i+=0.5){
+
+        for(float i=-1; i<1; i+=1){
             // Draw the loaded model
             glm::mat4 model_sphere;
-            model_sphere = glm::translate(model_sphere, glm::vec3(i, sin(currentFrame), cos(currentFrame))); // Translate it down a bit so it's at the center of the scene
+            model_sphere = glm::translate(model_sphere, glm::vec3(i+cos(currentFrame)/10, currentFrame/12-2.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
             model_sphere = glm::scale(model_sphere, glm::vec3(0.1f, 0.1f, 0.1f));	// It's a bit too big for our scene, so scale it down
             glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model_sphere));
             ourModel.Draw(shader);
