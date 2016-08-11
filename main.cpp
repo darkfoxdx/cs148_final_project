@@ -94,12 +94,16 @@ int main()
     frag_path.append(FILE_PATH);
     frag_path.append("shader/nvidia.frag");
 
+    /*
+
     std::string shadow_mapping_vert_path;
     shadow_mapping_vert_path.append(FILE_PATH);
     shadow_mapping_vert_path.append("shader/shadow_mapping.vert");
     std::string shadow_mapping_frag_path;
     shadow_mapping_frag_path.append(FILE_PATH);
     shadow_mapping_frag_path.append("shader/shadow_mapping.frag");
+
+    */
 
     std:string model_obj_path;
     model_obj_path.append(FILE_PATH);
