@@ -19,7 +19,7 @@ uniform sampler2DShadow shadowMap;
 
 uniform vec3 lightPos;
 uniform vec3 viewPos;
-uniform vec3 lightColor;
+uniform vec3 objectColor;
 
 vec3 raytrace(vec3 plane_center, vec3 plane_normal, vec3 ray_origin, vec3 ray_direction){
     float t=dot(plane_normal,plane_center-ray_origin)/dot(plane_normal, ray_direction);
@@ -105,5 +105,5 @@ void main()
     fragColour += caustic;
     fragColour.a = 1.0;
     // Output the colour
-    color = fragColour * visibility;
+    color = fragColour * visibility * vec4(objectColor, 1);
 }

@@ -43,7 +43,7 @@ bool    keys[1024];
 
 // Light
 glm::vec3 lightPos(-2.0f, 12.0f, -3.0f);
-glm::vec3 lightInvDir(2, 12, 0);
+glm::vec3 lightInvDir(-2, 12, -11);
 // Deltatime
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
 GLfloat lastFrame = 0.0f;  	// Time of last frame
@@ -111,6 +111,12 @@ int main()
     model_obj_path.append(FILE_PATH);
     model_obj_path.append("ground/sphere.obj");
     char *cstrModel = &model_obj_path[0u];
+
+    std::string solid_obj_path;
+    solid_obj_path.append(FILE_PATH);
+    solid_obj_path.append("ground/hamburger.obj");
+    char *cstrSolidModel = &solid_obj_path[0u];
+
     string floor_obj_path;
     floor_obj_path.append(FILE_PATH);
     floor_obj_path.append("ground/ground.obj");
@@ -118,6 +124,7 @@ int main()
 
     Model ourModel(cstrModel);
     Model floorModel(cstrFloorModel);
+    Model solidModel(cstrSolidModel);
 
     // Load and create a texture
     GLuint oceanHeightTexture, oceanNormalTexture, lightMapTexture;
@@ -143,10 +150,11 @@ int main()
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Set texture samples
+
+    //Don't understand why arragmenet of code screws it up. DO NOT TOUCH
     simpleDepthShader.Use();
     glUniform1i(glGetUniformLocation(shader.Program, "shadowMap"), 28);
     GLuint DepthBiasID = glGetUniformLocation(shader.Program, "DepthBiasMVP");
-
     shader.Use();
     // Get a handle for our "MVP" uniform
     GLuint depthMatrixID = glGetUniformLocation(simpleDepthShader.Program, "depthMVP");
@@ -209,8 +217,13 @@ int main()
         glViewport(0, 0, 1024, 1024);
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
         glClear(GL_DEPTH_BUFFER_BIT);
-        ourModel.Draw(simpleDepthShader);
-        RenderScene(floorModel, simpleDepthShader);
+        // Draw the loaded model
+        glm::mat4 model_solid;
+        model_solid = glm::translate(model_solid, glm::vec3(0.0f, -1.75f, 1.0f)); // Translate it down a bit so it's at the center of the scene
+        model_solid = glm::scale(model_solid, glm::vec3(0.2, 0.2, 0.2));	// It's a bit too big for our scene, so scale it down
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model_solid));
+        glUniform3f(glGetUniformLocation(shader.Program, "objectColor"),  1.0f, 0.0f, 0.0f);
+        solidModel.Draw(shader);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 2. Render scene as normal
@@ -258,13 +271,36 @@ int main()
         glBindTexture(GL_TEXTURE_2D, lightMapTexture);
         glUniform1i(glGetUniformLocation(shader.Program, "lightMap"), 31);
 
-        RenderScene(floorModel, shader);
+        // Draw the loaded model
+        glm::mat4 model;
+        model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// It's a bit too big for our scene, so scale it down
+        glUniform3f(glGetUniformLocation(shader.Program, "objectColor"),  1.0f, 1.0f, 1.0f);
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        floorModel.Draw(shader);
+        // Draw the loaded model
+        glUniform3f(glGetUniformLocation(shader.Program, "objectColor"),  1.0f, 0.0f, 0.0f);
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model_solid));
+        solidModel.Draw(shader);
 
+        glUniform3f(glGetUniformLocation(shader.Program, "objectColor"),  1.0f, 1.0f, 1.0f);
         // Draw the loaded model
         glm::mat4 model_sphere;
-        model_sphere = glm::translate(model_sphere, glm::vec3(cos(currentFrame)/10, currentFrame/12-2.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+        model_sphere = glm::translate(model_sphere, glm::vec3(cos(currentFrame)/10+0.1f, currentFrame/13 -2.0f, -0.05f)); // Translate it down a bit so it's at the center of the scene
         model_sphere = glm::scale(model_sphere, glm::vec3(0.1f, 0.1f, 0.1f));	// It's a bit too big for our scene, so scale it down
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model_sphere));
+        ourModel.Draw(shader);
+
+        glm::mat4 model_sphere2;
+        model_sphere2 = glm::translate(model_sphere2, glm::vec3(cos(currentFrame)/10-0.5f, currentFrame/16 -0.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+        model_sphere2 = glm::scale(model_sphere2, glm::vec3(0.05f, 0.05f, 0.05f));	// It's a bit too big for our scene, so scale it down
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model_sphere2));
+        ourModel.Draw(shader);
+
+        glm::mat4 model_sphere3;
+        model_sphere3 = glm::translate(model_sphere3, glm::vec3(cos(currentFrame)/10-0.58f, currentFrame/16 -0.78f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+        model_sphere3 = glm::scale(model_sphere3, glm::vec3(0.03f, 0.03f, 0.03f));	// It's a bit too big for our scene, so scale it down
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model_sphere3));
         ourModel.Draw(shader);
 
         // Swap the buffers
@@ -274,17 +310,6 @@ int main()
     // Terminate at the end
     glfwTerminate();
     return 0;
-}
-
-
-void RenderScene(Model &ourModel, Shader &shader)
-{
-    // Draw the loaded model
-    glm::mat4 model;
-    model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
-    model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// It's a bit too big for our scene, so scale it down
-    glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-    ourModel.Draw(shader);
 }
 
 // This function loads a texture from file. Note: texture loading functions like these are usually
@@ -350,6 +375,8 @@ void do_movement()
         lightInvDir.y -= 1;
     if (keys[GLFW_KEY_EQUAL])
         lightInvDir.y += 1;
+
+    //cout << lightInvDir.x << ", " << lightInvDir.y << ", " << lightInvDir.z << "\n";
 }
 
 bool firstMouse = true;
