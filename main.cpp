@@ -29,7 +29,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void do_movement();
 
 // Window dimensions
-const GLuint WIDTH = 800, HEIGHT = 600;
+const GLuint WIDTH = 1280, HEIGHT = 720;
 
 // Camera
 Camera  camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -38,7 +38,7 @@ GLfloat lastY  =  HEIGHT / 2.0;
 bool    keys[1024];
 
 // Light
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+glm::vec3 lightPos(-2.0f, 12.0f, -3.0f);
 
 // Deltatime
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
@@ -86,14 +86,14 @@ int main()
 
     // OpenGL options
     glEnable(GL_DEPTH_TEST);
-
+    glEnable(GL_BLEND);
     // Build and compile our shader program
     std::string vert_path;
     vert_path.append(FILE_PATH);
-    vert_path.append("shader/model_loading.vert");
+    vert_path.append("shader/nvidia.vert");
     std::string frag_path;
     frag_path.append(FILE_PATH);
-    frag_path.append("shader/model_loading.frag");
+    frag_path.append("shader/nvidia.frag");
 
     Shader shader(vert_path.c_str(), frag_path.c_str());
 
@@ -103,23 +103,27 @@ int main()
     char *cstrModel = &model_obj_path[0u];
     string floor_obj_path;
     floor_obj_path.append(FILE_PATH);
-    floor_obj_path.append("ground/curve.obj");
+    floor_obj_path.append("ground/ground.obj");
     char *cstrFloorModel = &floor_obj_path[0u];
     // Load models
     Model ourModel(cstrModel);
     Model floorModel(cstrFloorModel);
 
     // Load and create a texture
-    GLuint oceanHeightTexture, oceanNormalTexture;
+    GLuint oceanHeightTexture, oceanNormalTexture, lightMapTexture;
     int textureWidth, textureHeight;
     std::string textureOceanHeight;
     textureOceanHeight.append(FILE_PATH);
-    textureOceanHeight.append("ocean_height.png");
+    textureOceanHeight.append("sine_wave_height.png");
     char *cstrTextureOceanHeight = &textureOceanHeight[0u];
     std::string textureOceanNormal;
     textureOceanNormal.append(FILE_PATH);
-    textureOceanNormal.append("ocean_normal.png");
+    textureOceanNormal.append("sine_wave_normal.png");
     char *cstrtextureOceanNormal = &textureOceanNormal[0u];
+    std::string lightMapFile;
+    lightMapFile.append(FILE_PATH);
+    lightMapFile.append("light_map.png");
+    char *cstrlightMapFile = &lightMapFile[0u];
     // ====================
     // Texture 1
     // ====================
@@ -150,9 +154,26 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // Load, create texture and generate mipmaps
     unsigned char* image2 = SOIL_load_image(cstrtextureOceanNormal, &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image2);
     glGenerateMipmap(GL_TEXTURE_2D);
     SOIL_free_image_data(image2);
+    glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done, so we won't accidentily mess up our texture.
+    // ====================
+    // Texture 3
+    // ====================
+    glGenTextures(1, &lightMapTexture);
+    glBindTexture(GL_TEXTURE_2D, lightMapTexture); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+    // Set our texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // Set texture filtering
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // Load, create texture and generate mipmaps
+    unsigned char* image3 = SOIL_load_image(cstrlightMapFile, &textureWidth, &textureHeight, 0, SOIL_LOAD_RGB);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image3);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    SOIL_free_image_data(image3);
     glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done, so we won't accidentily mess up our texture.
 
     // Draw in wireframe
@@ -165,6 +186,8 @@ int main()
         GLfloat currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+
+        //lightPos -= deltaTime;
 
         // Check and call events
         glfwPollEvents();
@@ -184,17 +207,20 @@ int main()
         GLint lightColorLoc  = glGetUniformLocation(shader.Program, "lightColor");
         GLint lightPosLoc    = glGetUniformLocation(shader.Program, "lightPos");
         GLint viewPosLoc     = glGetUniformLocation(shader.Program, "viewPos");
-        glUniform3f(lightColorLoc,  1.0f, 0.0f, 0.0f);
+        glUniform3f(lightColorLoc,  0.0f, 0.0f, 0.0f);
         glUniform3f(lightPosLoc,    lightPos.x, lightPos.y, lightPos.z);
         glUniform3f(viewPosLoc,     camera.Position.x, camera.Position.y, camera.Position.z);
 
         // Bind Textures using texture units
-        glActiveTexture(GL_TEXTURE30);
+        glActiveTexture(GL_TEXTURE29);
         glBindTexture(GL_TEXTURE_2D, oceanHeightTexture);
-        glUniform1i(glGetUniformLocation(shader.Program, "oceanHeight"), 30);
-        glActiveTexture(GL_TEXTURE31);
+        glUniform1i(glGetUniformLocation(shader.Program, "oceanHeight"), 29);
+        glActiveTexture(GL_TEXTURE30);
         glBindTexture(GL_TEXTURE_2D, oceanNormalTexture);
-        glUniform1i(glGetUniformLocation(shader.Program, "oceanNormal"), 31);
+        glUniform1i(glGetUniformLocation(shader.Program, "oceanNormal"), 30);
+        glActiveTexture(GL_TEXTURE31);
+        glBindTexture(GL_TEXTURE_2D, lightMapTexture);
+        glUniform1i(glGetUniformLocation(shader.Program, "lightMap"), 31);
 
         // Draw the loaded model
         glm::mat4 model;
@@ -238,6 +264,18 @@ void do_movement()
         camera.ProcessKeyboard(LEFT, deltaTime);
     if (keys[GLFW_KEY_D])
         camera.ProcessKeyboard(RIGHT, deltaTime);
+    if (keys[GLFW_KEY_LEFT])
+        lightPos.x -= 1;
+    if (keys[GLFW_KEY_RIGHT])
+        lightPos.x += 1;
+    if (keys[GLFW_KEY_DOWN])
+        lightPos.z -= 1;
+    if (keys[GLFW_KEY_UP])
+        lightPos.z += 1;
+    if (keys[GLFW_KEY_MINUS])
+        lightPos.y -= 1;
+    if (keys[GLFW_KEY_EQUAL])
+        lightPos.y += 1;
 }
 
 bool firstMouse = true;
