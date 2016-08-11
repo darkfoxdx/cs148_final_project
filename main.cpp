@@ -29,7 +29,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void do_movement();
-void RenderScene(Shader &shader);
+void RenderScene(Model &ourModel, Shader &shader);
 GLuint loadTexture(GLchar* path);
 
 // Window dimensions
@@ -212,7 +212,8 @@ int main()
         glViewport(0, 0, 1024, 1024);
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
             glClear(GL_DEPTH_BUFFER_BIT);
-            RenderScene(simpleDepthShader);
+            RenderScene(ourModel, simpleDepthShader);
+            RenderScene(floorModel, simpleDepthShader);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 2. Render scene as normal
@@ -282,8 +283,8 @@ int main()
         model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// It's a bit too big for our scene, so scale it down
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-        floorModel.Draw(shader);
-        RenderScene(shader);
+        RenderScene(ourModel, shader);
+        RenderScene(floorModel, shader);
 
         // Swap the buffers
         glfwSwapBuffers(window);
@@ -295,28 +296,14 @@ int main()
 }
 
 
-void RenderScene(Shader &shader)
+void RenderScene(Model &ourModel, Shader &shader)
 {
-
-    std:string model_obj_path;
-    model_obj_path.append(FILE_PATH);
-    model_obj_path.append("ground/hamburger.obj");
-    char *cstrModel = &model_obj_path[0u];
-    string floor_obj_path;
-    floor_obj_path.append(FILE_PATH);
-    floor_obj_path.append("ground/ground.obj");
-    char *cstrFloorModel = &floor_obj_path[0u];
-    // Load models
-    Model ourModel(cstrModel);
-    Model floorModel(cstrFloorModel);
-
     // Draw the loaded model
     glm::mat4 model;
     model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
     model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// It's a bit too big for our scene, so scale it down
     glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
     ourModel.Draw(shader);
-    floorModel.Draw(shader);
 }
 
 // This function loads a texture from file. Note: texture loading functions like these are usually
