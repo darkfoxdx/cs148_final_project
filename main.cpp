@@ -99,7 +99,7 @@ int main()
 
     std:string model_obj_path;
     model_obj_path.append(FILE_PATH);
-    model_obj_path.append("ground/hamburger.obj");
+    model_obj_path.append("ground/sphere.obj");
     char *cstrModel = &model_obj_path[0u];
     string floor_obj_path;
     floor_obj_path.append(FILE_PATH);
@@ -179,16 +179,15 @@ int main()
     // Draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+
     // The loop
+    glfwSetTime(0);
     while(!glfwWindowShouldClose(window))
     {
         // Set frame time
-        GLfloat currentFrame = glfwGetTime();
+        double currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-
-        //lightPos -= deltaTime;
-
         // Check and call events
         glfwPollEvents();
         do_movement();
@@ -222,12 +221,20 @@ int main()
         glBindTexture(GL_TEXTURE_2D, lightMapTexture);
         glUniform1i(glGetUniformLocation(shader.Program, "lightMap"), 31);
 
+        for(float i=-1; i<1; i+=0.5){
+            // Draw the loaded model
+            glm::mat4 model_sphere;
+            model_sphere = glm::translate(model_sphere, glm::vec3(i, sin(currentFrame), cos(currentFrame))); // Translate it down a bit so it's at the center of the scene
+            model_sphere = glm::scale(model_sphere, glm::vec3(0.1f, 0.1f, 0.1f));	// It's a bit too big for our scene, so scale it down
+            glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model_sphere));
+            ourModel.Draw(shader);
+        }
         // Draw the loaded model
         glm::mat4 model;
         model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
         model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// It's a bit too big for our scene, so scale it down
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        ourModel.Draw(shader);
+
         floorModel.Draw(shader);
 
         // Swap the buffers
