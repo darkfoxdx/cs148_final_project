@@ -5,6 +5,7 @@ in vec3 Normal;
 in vec3 FragPos;
 in vec3 PlaneNormal; //position and normal of the caustics plane
 in vec3 PlanePosition;
+in vec4 ShadowCoord;
 
 out vec4 color;
 
@@ -14,6 +15,7 @@ uniform sampler2D texture_specular1;
 uniform sampler2D oceanHeight;
 uniform sampler2D oceanNormal;
 uniform sampler2D lightMap;
+uniform sampler2DShadow shadowMap;
 
 uniform vec3 lightPos;
 uniform vec3 viewPos;
@@ -57,8 +59,8 @@ void main()
         vec3 refractionDir =  ((refractionRatio * c1 + c2) * vec3(-normal_map))+(lightDir*refractionRatio);
 
 
-        //vec3 hit_pos2 = raytrace(lightPos, lightDir, hit_pos, refractionDir);
-        vec3 hit_pos2 = ((hit_pos + refractionDir * 5)/2);
+        vec3 hit_pos2 = raytrace(lightPos, lightDir, hit_pos, refractionDir);
+        //vec3 hit_pos2 = ((hit_pos + refractionDir * 5)/2);
 
         float light_x_range = 10;
         float light_z_range = 10;
@@ -89,6 +91,8 @@ void main()
     //color = texture(lightMap, TexCoords);
     //color = texture(oceanNormal, TexCoords);
 
+    float visibility = texture(shadowMap, vec3(ShadowCoord.xy, (ShadowCoord.z)/ShadowCoord.w));
+
     // Sample the ocean floor texture
     vec4 fragColour = vec4(1, 0, 0, 1);
     vec4 waterColour = vec4(0, 1, 1, 1);
@@ -101,5 +105,5 @@ void main()
     fragColour += caustic;
     fragColour.a = 1.0;
     // Output the colour
-    color = fragColour;
+    color = fragColour * visibility;
 }
