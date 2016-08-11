@@ -22,6 +22,8 @@
 
 #include <SOIL.h>
 
+#define RAND_MAX 1
+
 // Function prototypes
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -221,12 +223,18 @@ int main()
         glBindTexture(GL_TEXTURE_2D, lightMapTexture);
         glUniform1i(glGetUniformLocation(shader.Program, "lightMap"), 31);
 
+        float randNum[100];
+        float randScale[100];
+        for(int j = 0; j<100; j++){
+            randNum[j] = rand();
+            randScale[j] = rand();
+        }
 
-        for(float i=-1; i<1; i+=1){
+        for(float i=-1; i<100; i+=1){
             // Draw the loaded model
             glm::mat4 model_sphere;
-            model_sphere = glm::translate(model_sphere, glm::vec3(i+cos(currentFrame)/10, currentFrame/12-2.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
-            model_sphere = glm::scale(model_sphere, glm::vec3(0.1f, 0.1f, 0.1f));	// It's a bit too big for our scene, so scale it down
+            model_sphere = glm::translate(model_sphere, glm::vec3(randNum[i]+cos(currentFrame)/10, currentFrame/12-2.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+            model_sphere = glm::scale(model_sphere, glm::vec3(randScale[i]/5, randScale[i]/5, randScale[i]/5));	// It's a bit too big for our scene, so scale it down
             glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model_sphere));
             ourModel.Draw(shader);
         }
