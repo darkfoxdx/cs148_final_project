@@ -48,7 +48,6 @@ glm::vec3 lightInvDir(2, 12, 0);
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
 GLfloat lastFrame = 0.0f;  	// Time of last frame
 
-float randNum[100];
 float randScale[100];
 
 int main()
@@ -90,13 +89,13 @@ int main()
     //Randomize the bubbles
     for(int j = 0; j<100; j++)
     {
-        randNum[j] = rand();
         randScale[j] = rand();
     }
 
     // OpenGL options
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
+
     // Build and compile our shader program
     std::string vert_path;
     vert_path.append(FILE_PATH);
@@ -104,30 +103,6 @@ int main()
     std::string frag_path;
     frag_path.append(FILE_PATH);
     frag_path.append("shader/nvidia.frag");
-
-    /*
-
-    std::string shadow_mapping_vert_path;
-    shadow_mapping_vert_path.append(FILE_PATH);
-    shadow_mapping_vert_path.append("shader/shadow_mapping.vert");
-    std::string shadow_mapping_frag_path;
-    shadow_mapping_frag_path.append(FILE_PATH);
-    shadow_mapping_frag_path.append("shader/shadow_mapping.frag");
-
-    */
-
-std:
-    string model_obj_path;
-    model_obj_path.append(FILE_PATH);
-    model_obj_path.append("ground/sphere.obj");
-    char *cstrModel = &model_obj_path[0u];
-    string floor_obj_path;
-    floor_obj_path.append(FILE_PATH);
-    floor_obj_path.append("ground/ground.obj");
-    char *cstrFloorModel = &floor_obj_path[0u];
-    // Load models
-    Model ourModel(cstrModel);
-    Model floorModel(cstrFloorModel);
 
     std::string simple_depth_vert_path;
     simple_depth_vert_path.append(FILE_PATH);
@@ -137,8 +112,21 @@ std:
     simple_depth_frag_path.append("shader/shadow_mapping_depth.frag");
 
     Shader shader(vert_path.c_str(), frag_path.c_str());
-    //Shader shader(shadow_mapping_vert_path.c_str(), shadow_mapping_frag_path.c_str());
     Shader simpleDepthShader(simple_depth_vert_path.c_str(), simple_depth_frag_path.c_str());
+
+    // Load models
+
+    std::string model_obj_path;
+    model_obj_path.append(FILE_PATH);
+    model_obj_path.append("ground/sphere.obj");
+    char *cstrModel = &model_obj_path[0u];
+    string floor_obj_path;
+    floor_obj_path.append(FILE_PATH);
+    floor_obj_path.append("ground/ground.obj");
+    char *cstrFloorModel = &floor_obj_path[0u];
+
+    Model ourModel(cstrModel);
+    Model floorModel(cstrFloorModel);
 
     // Load and create a texture
     GLuint oceanHeightTexture, oceanNormalTexture, lightMapTexture;
@@ -164,11 +152,11 @@ std:
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Set texture samples
-    shader.Use();
+    simpleDepthShader.Use();
     glUniform1i(glGetUniformLocation(shader.Program, "shadowMap"), 28);
     GLuint DepthBiasID = glGetUniformLocation(shader.Program, "DepthBiasMVP");
 
-    simpleDepthShader.Use();
+    shader.Use();
     // Get a handle for our "MVP" uniform
     GLuint depthMatrixID = glGetUniformLocation(simpleDepthShader.Program, "depthMVP");
 
@@ -211,6 +199,7 @@ std:
         double currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+
         // Check and call events
         glfwPollEvents();
         do_movement();
@@ -228,8 +217,8 @@ std:
         glViewport(0, 0, 1024, 1024);
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
         glClear(GL_DEPTH_BUFFER_BIT);
-        //RenderScene(ourModel, simpleDepthShader);
-        //RenderScene(floorModel, simpleDepthShader);
+        ourModel.Draw(simpleDepthShader);
+        RenderScene(floorModel, simpleDepthShader);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 2. Render scene as normal
@@ -242,6 +231,7 @@ std:
         glm::mat4 view = camera.GetViewMatrix();
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+
         glm::mat4 biasMatrix(
             0.5, 0.0, 0.0, 0.0,
             0.0, 0.5, 0.0, 0.0,
@@ -249,7 +239,7 @@ std:
             0.5, 0.5, 0.5, 1.0
         );
 
-        glm::mat4 depthBiasMVP = biasMatrix*depthMVP;
+        glm::mat4 depthBiasMVP = biasMatrix * depthMVP;
 
         // Send our transformation to the currently bound shader,
         // in the "MVP" uniform
@@ -276,24 +266,22 @@ std:
         glBindTexture(GL_TEXTURE_2D, lightMapTexture);
         glUniform1i(glGetUniformLocation(shader.Program, "lightMap"), 31);
 
-        //Do some transformations to the whole scene
+        //Do some transformations to the floor model
         glm::mat4 model;
         model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate it down a bit so it's at the center of the scene
         model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// It's a bit too big for our scene, so scale it down
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-        floorModel.Draw(shader);
+        RenderScene(floorModel, shader);
 
         // Draw the loaded model
-        for(int i=-1; i<100; i+=1)
-        {
             // Draw the loaded model
             glm::mat4 model_sphere;
-            model_sphere = glm::translate(model_sphere, glm::vec3(randNum[i]+cos(currentFrame)/10, currentFrame/12-2.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
-            model_sphere = glm::scale(model_sphere, glm::vec3(randScale[i]/5, randScale[i]/5, randScale[i]/5));	// It's a bit too big for our scene, so scale it down
+            model_sphere = glm::translate(model_sphere, glm::vec3(cos(currentFrame)/10, currentFrame/12-2.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+            model_sphere = glm::scale(model_sphere, glm::vec3(0.1f, 0.1f, 0.1f));	// It's a bit too big for our scene, so scale it down
             glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model_sphere));
             ourModel.Draw(shader);
-        }
+            //RenderScene(ourModel, shader);
 
         // Swap the buffers
         glfwSwapBuffers(window);
